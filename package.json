@@ -1,0 +1,13 @@
+{
+  "name": "anetjs",
+  "version": "1.0.0",
+  "description": "anet blockchain made in nodejs",
+  "main": " src/server.js",
+  "repository": "https://github.com/feryll/anetjs.git",
+  "author": "joshua <joshua.feryll@gmail.com>",
+  "license": "MIT",
+  "private": false,
+  "dependencies": {
+    "crypto-js": "^3.1.9-1"
+  }
+}

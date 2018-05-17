@@ -1,0 +1,19 @@
+GET http://localhost:3000
+
+
+###
+
+POST http://localhost:3000/blocks
+content-type: application/json
+
+{
+    "data" : "new block!"
+}
+
+###
+POST http://localhost:3000/peers
+content-type: application/json
+
+{
+    "peer" : "ws://localhost:4000"
+}

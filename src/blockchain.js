@@ -13,7 +13,7 @@ class Block {
 const genesisBlock = new Block(
     0,
     "38BDBE092245287F0425AA8258240F9AAD47B059623BC2BD3D6207B84C5DCCF9", 
-    null, 
+    "", 
     1526363336,
     "This is the genesis"
 );
@@ -22,7 +22,7 @@ let blockchain = [genesisBlock];
 
 const getNewestBlock = () => blockchain[blockchain.length -1];
 
-const getTimeStamp = () => new Date().getTime() / 1000;
+const getTimeStamp = () => Math.round(new Date().getTime() / 1000);
 
 const getBlockchain = () => blockchain;
 
@@ -73,6 +73,11 @@ const isBlockValid = (candidateBlock, latestBlock) => {
 };
 
 const isBlockStructureValid = (block) => {
+    //console.log("index: "+typeof block.index);
+    //console.log("hash: "+typeof block.hash);
+    //console.log("previoushash: "+typeof block.previoushash);
+    //console.log("timestamp: "+typeof block.timestamp);
+    //console.log("data: "+typeof block.data);
     return (
         typeof block.index === 'number' && 
         typeof block.hash === 'string' && 
@@ -91,7 +96,8 @@ const isChainValid = (candidateChain) => {
         return false;             
     }
     for(let i = 1; i < candidateChain.length; i++) {
-        if(!isBlockValid(candidateChain[i - 1])) {
+        const currentBlock = candidateChain[i];
+        if(!isBlockValid(currentBlock, candidateChain[i - 1])) {
             return false;
         } 
     }
@@ -122,5 +128,6 @@ module.exports = {
     isBlockStructureValid,
     addBlockToChain,
     replaceChain,
+    getBlockchain, 
     createNewBlock
 };

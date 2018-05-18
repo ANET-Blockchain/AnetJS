@@ -2,7 +2,7 @@ const WebSockets = require("ws"),
     Blockchain = require("./blockchain");
 
 
-const { replaceChain, addBlockToChain, getNewestBlock, isBlockStructureValid } = Blockchain;
+const { getBlockchain, replaceChain, addBlockToChain, getNewestBlock, isBlockStructureValid } = Blockchain;
 
 const sockets = [];
 
@@ -26,7 +26,7 @@ const getAll = () => {
     };
 };
 
-const blockchainResponse = () => {
+const blockchainResponse = data => {
     return {
         type: BLOCKCHAIN_RESPONSE,
         data
@@ -71,6 +71,9 @@ const handleSocketMessages = ws => {
             case GET_LATEST:
                 sendMessage(ws, responseLatest());
                 break;
+            case GET_ALL:
+                sendMessage(ws, responseAll());
+                break;
             case BLOCKCHAIN_RESPONSE:
                 const receivedBlocks = message.data;
                 if(receivedBlocks === null) {
@@ -102,7 +105,7 @@ const handleBlockchainResponse = receivedBlocks => {
         } else if(receivedBlocks.length === 1) {
             // you've got GET_LATEST msg and the block is not adjacent
             // need to get all the blocks
-            
+            sendMessageToAll(getAll());            
         } else {
             replaceChain(receivedBlocks);
         }
@@ -112,9 +115,11 @@ const handleBlockchainResponse = receivedBlocks => {
 
 const sendMessage = (ws, message) => ws.send(JSON.stringify(message));
 
-const snedMessageToAll = message => sockets.forEach(socket => sendMessage(ws, message));
+const sendMessageToAll = message => sockets.forEach(ws => sendMessage(ws, message));
 
 const responseLatest = () => blockchainResponse([getNewestBlock()]);
+
+const responseAll = () => blockchainResponse(getBlockchain());
 
 const handleSocketError = ws => {
     const closeSockectConnection = ws => {

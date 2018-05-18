@@ -116,6 +116,7 @@ const replaceChain = newChain => {
 const addBlockToChain = candidateBlock => {
     if(isBlockValid(candidateBlock, getNewestBlock())) {
         getBlockchain().push(candidateBlock);
+        require("./p2p").broadcastNewBlock();
         return true;
     } else {
         return false;

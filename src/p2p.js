@@ -101,7 +101,9 @@ const handleBlockchainResponse = receivedBlocks => {
     if(latestBlockReceived.index > newestBlock.index) {
         // only one block behind
         if(newestBlock.hash === latestBlockReceived.previoushash) {
-            addBlockToChain(latestBlockReceived);
+            if(addBlockToChain(latestBlockReceived)) {
+                broadcastNewBlock();
+            }            
         } else if(receivedBlocks.length === 1) {
             // you've got GET_LATEST msg and the block is not adjacent
             // need to get all the blocks
@@ -120,6 +122,8 @@ const sendMessageToAll = message => sockets.forEach(ws => sendMessage(ws, messag
 const responseLatest = () => blockchainResponse([getNewestBlock()]);
 
 const responseAll = () => blockchainResponse(getBlockchain());
+
+const broadcastNewBlock = () => sendMessageToAll(responseLatest());
 
 const handleSocketError = ws => {
     const closeSockectConnection = ws => {
@@ -140,5 +144,6 @@ const connectToPeers = newPeer => {
 
 module.exports = {
     startP2PServer,
-    connectToPeers
+    connectToPeers,
+    broadcastNewBlock
 };

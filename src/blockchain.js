@@ -166,9 +166,14 @@ const isChainValid = (candidateChain) => {
     return true;
 };
 
-const replaceChain = newChain => {
-    if(isChainValid(newChain) && newChain.length > getBlockchain().length) {
-        blockchain = newChain;
+const sumDifficulty = blockchain => blockchain
+    .map(block => block.difficulty)
+    .map(difficulty => Math.pow(2, difficulty))
+    .reduce((a, b) => a + b);
+
+const replaceChain = candidateChain => {
+    if(isChainValid(candidateChain) && sumDifficulty(candidateChain) > sumDifficulty(getBlockchain())) {
+        blockchain = candidateChain;
         return true;
     } else {
         return false;

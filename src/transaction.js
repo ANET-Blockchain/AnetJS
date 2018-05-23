@@ -63,7 +63,7 @@ const signTxIn = (tx, txInIndex, privateKey, uTxOut) => {
 
 const updateUTxOuts = (newTxs, uTxOutList) => {
     
-    // making new TxOut coming from a new Tx
+    // making new TxOut resulting from a new Tx
     const newUTxOuts = newTxs.map(tx => {
         tx.txOuts.map(
             (txOut, index) => {
@@ -84,3 +84,64 @@ const updateUTxOuts = (newTxs, uTxOutList) => {
         .concat(newUTxOuts);
 };
 
+const isTxInStructureValid = (txIn) => {
+    if(txIn === null) {
+        return false;
+    } else if(typeof txIn.signature !== "string") {
+        return false;
+    } else if(typeof txIn.txOutId !== "string") {
+        return false;
+    } else if(typeof txIn.txOutIndex !== "number") {
+        return false;
+    } else {
+        return true;
+    }
+
+}
+
+const isAddressValid = address => {
+    if(address.length !== 300) {
+        return false;
+    } else if(address.match("^[a-fA-F0-9]+$") === null) {
+        return false;
+    } else if(!address.startsWith("04")) {
+        return false;
+    } else {
+        return true;
+    }
+}
+
+const isTxOutStructureValid = (txOut) => {
+    if(txOut === null) {
+        return false;
+    } else if(typeof txOut.address !== "string") {
+        return false;
+    } else if(!isAddressValid(txOut.address)) {
+        return false;
+    } else if(typeof txOut.amount !== "number") {
+        return false;
+    } else {
+        return true;
+    }
+}
+
+const isTxStructureValid = (tx) => {
+    if(typeof tx.id !== "string") {
+        console.log("Tx Id is not valid");
+        return false;
+    } else if(!(tx.txIns instanceof Array)) {
+        console.log("txIns are not an array");
+        return false;
+    } else if(!tx.txIns.map(isTxInStructureValid).reduce((a, b) => a && b, true)) {
+        console.log("structure of one of the txIns is not valid");
+        return false;
+    } else if(!(tx.txOuts instanceof Array)) {
+        console.log("txOuts are not an array");
+        return false;
+    } else if(!tx.txOuts.map(isTxOutStructureValid).reduce((a, b) => a && b, true)) {
+        console.log("structure of one of the txOuts is not valid");
+        return false;
+    } else {
+        return true;
+    }
+}

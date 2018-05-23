@@ -4,24 +4,27 @@ const CryptoJS = require("crypto-js"),
 
 const ec = new elliptic.ec("secp256k1");
 
+const COINBASE_AMOUNT = 50;
+
+
 class TxOut {
     constructor(address, amount) {
         this.address = address;
         this.amount = amount;
     }
-}
+};
 
 class TxIn {
     // uTxOutId
     // uTxOutIndex
     // Signature
-}
+};
 
 class Transaction {
     // ID
     // txIns[]
     // txOuts[]
-}
+};
 
 class UTxOut {
     constructor(txOutId, txOutIndex, address, amount) {
@@ -30,7 +33,7 @@ class UTxOut {
         this.address = address;
         this.amount = amount;
     }
-}
+};
 
 let uTxOuts = [];
 
@@ -46,7 +49,7 @@ const getTxId = tx => {
 
 const findUTxOut = (txOutId, txOutIndex, uTxOutList) => {
     return uTxOutList.find(uTxOut => uTxOut.txOutId === txOutId && uTxOut.txOutIndex === txOutIndex);
-}
+};
 
 const signTxIn = (tx, txInIndex, privateKey, uTxOut) => {
     const txIn = tx.txIns[txInIndex];
@@ -109,7 +112,7 @@ const isAddressValid = address => {
     } else {
         return true;
     }
-}
+};
 
 const isTxOutStructureValid = (txOut) => {
     if(txOut === null) {
@@ -123,7 +126,7 @@ const isTxOutStructureValid = (txOut) => {
     } else {
         return true;
     }
-}
+};
 
 const isTxStructureValid = (tx) => {
     if(typeof tx.id !== "string") {
@@ -141,7 +144,65 @@ const isTxStructureValid = (tx) => {
     } else if(!tx.txOuts.map(isTxOutStructureValid).reduce((a, b) => a && b, true)) {
         console.log("structure of one of the txOuts is not valid");
         return false;
+    } else {a
+        return true;
+    }
+};
+
+const validateTxIn = (txIn, tx ,uTxOutList) => {
+    const wantedTxOut = uTxOutList.find(uTxOut => uTxOut.txOutId === txIn.txOutId && uTxOut.txOutIndex === txIn.txOutIndex);
+    if(wantedTxOut === null) {
+        return false;
+    } else {
+        const address = wantedTxOut.address;
+        const key = ec.keyFromPublic(address, "hex");
+        return key.verify(tx.id, txIn.signature);
+    }
+}
+
+const getAmountInTxIn = (txIn, uTxOutList) => findUTxOut(txIn.txOutId, txIn.txOutIndex, uTxOutList).amount;
+
+const validateTx = (tx, uTxOutList) => {
+    if(getTxId(tx) !== tx.id) {
+        return false;
+    } else if(!isTxStructureValid(tx)) {
+        return false;
+    }
+
+    const hasValidTxIns = tx.txIns.map(txIn => validateTxIn(txIn, tx, uTxOuts));
+
+    if(!hasValidTxIns) {
+        return false;
+    }
+
+    const amountInTxIns = tx.txIns.map(txIn => getAmountInTxIn(txIn, uTxOutList)).reduce((a, b) => a + b, 0);
+
+    const amountInTxOuts = tx.txOuts.map(txOut => txOut.amount).reduce((a, b) => a + b, 0);
+
+    if(amountInTxIns !== amountInTxOuts) {
+        return false;
     } else {
         return true;
     }
-}
+};
+
+const validateCoinbaseTx = (tx, blockIndex) => {
+    if(getTxId(tx) !== tx.id) {
+        console.log("Invalid Coinbase Tx ID");
+        return false;
+    } else if(tx.txIns.length !== 1) {
+        console.log("Coinbase Tx should have only one input");
+        return false;
+    } else if(tx.txIns[0].txOutIndex !== blockIndex) {
+        console.log("txOutInfex of the Coinbase Tx should be the same as the Block index");
+        return false;
+    } else if(tx.txOuts.length !== 1) {
+        console.log("Coinbase Tx should have only one output");
+        return false;
+    } else if(tx.txOuts[0].amount !== COINBASE_AMOUNT) {
+        console.log(`Coinbase Tx should have an amount of only ${COINBASE_AMOUNT} and it has ${tx.txOuts[0].amount}`);
+        return false;
+    } else {
+        return true;
+    } 
+};

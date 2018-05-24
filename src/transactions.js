@@ -29,8 +29,8 @@ class Transaction {
 
 class UTxOut {
     constructor(txOutId, txOutIndex, address, amount) {
-        this.TxOutId = txOutId;
-        this.TxOutIndex = txOutIndex;
+        this.txOutId = txOutId;
+        this.txOutIndex = txOutIndex;
         this.address = address;
         this.amount = amount;
     }
@@ -39,11 +39,13 @@ class UTxOut {
 
 const getTxId = tx => {
     const txInContent = tx.txIns
-        .map(txIn => txIn.uTxOutId + txIn.txOutIndex)
+        .map(txIn => txIn.txOutId + txIn.txOutIndex)
         .reduce((a, b) => a + b, "");
+    
     const txOutContent = tx.txOuts
         .map(txOut => txOut.address + txOut.amount)
         .reduce((a, b) => a + b, "");
+    
     return CryptoJS.SHA256(txInContent + txOutContent).toString();
 };
 
@@ -77,14 +79,14 @@ const getPublicKey = (privateKey) => {
 }
 
 const updateUTxOuts = (newTxs, uTxOutList) => {
-    
+
     // making new TxOut resulting from a new Tx
-    const newUTxOuts = newTxs.map(tx => {
+    const newUTxOuts = newTxs
+    .map(tx => 
         tx.txOuts.map(
-            (txOut, index) => {
-                new UTxOut(tx.id, index, txOut.address, txOut.amount);
-            });
-    })
+            (txOut, index) => new UTxOut(tx.id, index, txOut.address, txOut.amount)
+        )
+    )
     .reduce((a, b) => a.concat(b), []);
 
     // emptying the spentTxOut
@@ -92,11 +94,13 @@ const updateUTxOuts = (newTxs, uTxOutList) => {
         .map(tx => tx.txIns)
         .reduce((a, b) => a.concat(b), [])
         .map(txIn => new UTxOut(txIn.txOutId, txIn.txOutIndex, "", 0));
-
+    
     // remove the spentTxOut and add the new TxOut
-    const resultingUTxOuts = uTxOutList
+    const resultingUTxOuts = uTxOutList 
         .filter(uTxO => !findUTxOut(uTxO.txOutId, uTxO.txOutIndex, spentTxOuts))
         .concat(newUTxOuts);
+
+    return resultingUTxOuts;
 };
 
 const isTxInStructureValid = (txIn) => {
@@ -223,7 +227,8 @@ const createCoinbaseTx = (address, blockIndex) => {
     const tx = new Transaction();
     const txIn = new TxIn();
     txIn.signature = "";
-    txIn.txOutId = blockIndex;
+    txIn.txOutId = "";
+    txIn.txOutIndex = blockIndex;
     tx.txIns = [txIn];
     tx.txOuts = [new TxOut(address, COINBASE_AMOUNT)];
     tx.id = getTxId(tx);
@@ -231,19 +236,43 @@ const createCoinbaseTx = (address, blockIndex) => {
     return tx;
 };
 
+const hasDuplicates = (txIns) => {
+    const groups = _.countBy(txIns, txIn => txIn.txOutId + txIn.txOutIndex);
+    return _(groups).map(value => {
+        if(value > 1) {
+            console.log("Found duplicated txIn");
+            return true;
+        } else {
+            return false;
+        }
+    }).includes(true);
+}
+
 const validateBlockTx = (tx, uTxOutList, blockIndex) => {
     const coinbaseTx = tx[0];
     if(!validateCoinbaseTx(coinbaseTx, blockIndex)) {
         console.log("coinbase Tx is invalid");
     }
     
-    const txIns = _(tx).map(tx => tx.Ins).flatten().value();
+    const txIns = _(tx).map(tx => tx.txIns).flatten().value();
+
+    if(hasDuplicates(txIns)) {
+        console.log("Found duplicated txIns");
+        return false;
+    }
+
+    // remove the coinbaseTx, which always exists for the miner's reward
+    const nonCoinbaseTxs = tx.slice(1);
+
+    return nonCoinbaseTxs.map(tx => validateTx(tx, uTxOutList)).reduce((a, b) => a + b, true);
 };
 
 const processTxs = (txs, uTxOutList, blockIndex) => {
-    if(!validateBlockTx(tx, uTxOutList, blockIndex)) {
+
+    if(!validateBlockTx(txs, uTxOutList, blockIndex)) {
         return null;
     }
+
     return updateUTxOuts(txs, uTxOutList);
 };
 
@@ -254,5 +283,6 @@ module.exports = {
     TxIn,
     TxOut,
     Transaction,
+    processTxs,
     createCoinbaseTx 
 };

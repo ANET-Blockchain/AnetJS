@@ -32,6 +32,7 @@ const getBalance = (address, uTxOuts) => {
     return _(uTxOuts).filter(uTxOut => uTxOut.address === address)
         .map(uTxOut => uTxOut.amount)
         .sum();
+    
 }
 
 const initWallet = () => {

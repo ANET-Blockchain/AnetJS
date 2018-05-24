@@ -6,7 +6,7 @@ const CryptoJS = require("crypto-js"),
 
 const { getBalance, getPublicFromWallet } = Wallet;
 
-const { createCoinbaseTx } = Transactions;
+const { createCoinbaseTx, processTxs } = Transactions;
 
 // interval in minutes
 const BLOCK_GENERATION_INTERVAL = 10;
@@ -71,6 +71,7 @@ const createNewRawBlock = data => {
         difficulty
     );
     addBlockToChain(newBlock);
+    require("./p2p").broadcastNewBlock();
     return newBlock;
 };
 
@@ -198,8 +199,19 @@ const replaceChain = candidateChain => {
 
 const addBlockToChain = candidateBlock => {
     if(isBlockValid(candidateBlock, getNewestBlock())) {
-        getBlockchain().push(candidateBlock);
-        require("./p2p").broadcastNewBlock();
+        const processedTxs = processTxs(candidateBlock.data, uTxOuts, candidateBlock.index);
+
+        if(processedTxs === null) {
+            console.log("Couldn't process txs");
+            return false;
+        } else {
+            
+            blockchain.push(candidateBlock);
+            uTxOuts = processedTxs;
+
+            return true; 
+        }
+        //require("./p2p").broadcastNewBlock();
         return true;
     } else {
         return false;

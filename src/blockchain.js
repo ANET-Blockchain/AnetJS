@@ -1,10 +1,14 @@
 const CryptoJS = require("crypto-js"),
+    _ = require("lodash"),
     hexToBinary = require("hex-to-binary"),
     Wallet = require("./wallet"),
+    Mempool = require("./mempool");
     Transactions = require("./transactions");
 
 
-const { getBalance, getPublicFromWallet } = Wallet;
+const { getBalance, getPublicFromWallet, getPrivateFromWallet, createTx } = Wallet;
+
+const { addToMempool } = Mempool;
 
 const { createCoinbaseTx, processTxs } = Transactions;
 
@@ -218,7 +222,14 @@ const addBlockToChain = candidateBlock => {
     }
 };
 
+const getUTxOutList = () => _.cloneDeep(uTxOuts);
+
 const getAccountBalance = () => getBalance(getPublicFromWallet(), uTxOuts);
+
+const sendTx = (address, amount) => {
+    const tx = createTx(address, amount, getPrivateFromWallet(), getUTxOutList());
+    addToMempool(tx, getUTxOutList());
+};
 
 module.exports = {
     getNewestBlock,

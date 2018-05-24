@@ -3,14 +3,14 @@ const _ = require("lodash"),
 
 const { validateTx } = Transactions;
 
-let memPool = [];
+let mempool = [];
 
-const getTxInPool = memPool => {
-    return _(memPool).map(tx => tx.Ins).flatten().value();
+const getTxInPool = mempool => {
+    return _(mempool).map(tx => tx.Ins).flatten().value();
 };
 
-const isTxValidForPool = (tx, memPool) => {
-    const txInsInPool = getTxInPool(memPool);
+const isTxValidForPool = (tx, mempool) => {
+    const txInsInPool = getTxInPool(mempool);
     const isTxInAlreadyInPool = (txIns, txIn) => {
         return _.find(txIns, txInsInPool => {
             return (
@@ -28,15 +28,15 @@ const isTxValidForPool = (tx, memPool) => {
     return true;
 };
 
-const addToMemPool = (tx, uTxOutList) => {
+const addToMempool = (tx, uTxOutList) => {
     if(!validateTx(tx, uTxOutList)) {
         throw Error("This tx is invalid. It will not be added to the pool");
-    } else if(!isTxValidForPool(tx, memPool)) {
+    } else if(!isTxValidForPool(tx, mempool)) {
         throw Error("This tx is not valid for pool. It will not be added to the pool");
     }
-    memPool.push(tx);
-}
+    mempool.push(tx);
+};
 
 module.exports = {
-    addToMemPool
+    addToMempool
 }

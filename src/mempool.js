@@ -27,3 +27,16 @@ const isTxValidForPool = (tx, memPool) => {
     }
     return true;
 };
+
+const addToMemPool = (tx, uTxOutList) => {
+    if(!validateTx(tx, uTxOutList)) {
+        throw Error("This tx is invalid. It will not be added to the pool");
+    } else if(!isTxValidForPool(tx, memPool)) {
+        throw Error("This tx is not valid for pool. It will not be added to the pool");
+    }
+    memPool.push(tx);
+}
+
+module.exports = {
+    addToMemPool
+}

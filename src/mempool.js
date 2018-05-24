@@ -5,17 +5,19 @@ const { validateTx } = Transactions;
 
 let mempool = [];
 
-const getTxInPool = mempool => {
+const getMempool = () => _.cloneDeep(mempool);
+
+const getTxInsPool = mempool => {
     return _(mempool).map(tx => tx.Ins).flatten().value();
 };
 
 const isTxValidForPool = (tx, mempool) => {
-    const txInsInPool = getTxInPool(mempool);
+    const txInsInPool = getTxInsPool(mempool);
     const isTxInAlreadyInPool = (txIns, txIn) => {
-        return _.find(txIns, txInsInPool => {
+        return _.find(txIns, txInInPool => {
             return (
-                txIn.txOutIndex === txInsInPool.txOutIndex &&
-                txIn.txOutId === txInsInPool.txOutId
+                txIn.txOutIndex === txInInPool.txOutIndex &&
+                txIn.txOutId === txInInPool.txOutId
             );
         });
     }
@@ -38,5 +40,6 @@ const addToMempool = (tx, uTxOutList) => {
 };
 
 module.exports = {
-    addToMempool
+    addToMempool,
+    getMempool
 }

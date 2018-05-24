@@ -18,5 +18,18 @@ content-type: application/json
     "peer" : "ws://localhost:4000"
 }
 
+
 ###
+
 GET http://localhost:3000/me/balance
+
+
+###
+
+POST http://localhost:3000/transactions/
+content-type: application/json
+
+{
+    "address": "04c87cc38cf87086ad57ffb56bdaecf82745ceed7a157756a111fe81155117a55511501e3d814d1f222bf45a5a17c9c4fe95506ea73e0a25e6ad68f904886dcb1b",
+    "amount": 10
+}

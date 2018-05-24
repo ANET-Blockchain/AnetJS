@@ -8,7 +8,7 @@ const CryptoJS = require("crypto-js"),
 
 const { getBalance, getPublicFromWallet, getPrivateFromWallet, createTx } = Wallet;
 
-const { addToMempool } = Mempool;
+const { addToMempool, getMempool } = Mempool;
 
 const { createCoinbaseTx, processTxs } = Transactions;
 
@@ -58,7 +58,7 @@ CryptoJS.SHA256(
 const createNewBlock = () => {
     const coinbaseTx = createCoinbaseTx(getPublicFromWallet(), getNewestBlock().index + 1);
 
-    const blockData = [coinbaseTx];
+    const blockData = [coinbaseTx].concat(getMempool());    
     return createNewRawBlock(blockData);
 }
 
@@ -79,8 +79,8 @@ const createNewRawBlock = data => {
     return newBlock;
 };
 
-const findDifficulty = blockchain => {
-    const newestBlock = blockchain[blockchain.length - 1];
+const findDifficulty = () => {
+    const newestBlock = getNewestBlock();
     if(newestBlock.index % DIFFICULTY_ADJUSTMENT_INTERVAL === 0 && 
         newestBlock.index !== 0) {
         // calculate new difficulty
@@ -187,7 +187,7 @@ const isChainValid = (candidateChain) => {
     return true;
 };
 
-const sumDifficulty = blockchain => blockchain
+const sumDifficulty = anyblockchain => anyblockchain
     .map(block => block.difficulty)
     .map(difficulty => Math.pow(2, difficulty))
     .reduce((a, b) => a + b);
@@ -215,7 +215,6 @@ const addBlockToChain = candidateBlock => {
 
             return true; 
         }
-        //require("./p2p").broadcastNewBlock();
         return true;
     } else {
         return false;
@@ -229,6 +228,7 @@ const getAccountBalance = () => getBalance(getPublicFromWallet(), uTxOuts);
 const sendTx = (address, amount) => {
     const tx = createTx(address, amount, getPrivateFromWallet(), getUTxOutList());
     addToMempool(tx, getUTxOutList());
+    return tx;
 };
 
 module.exports = {
@@ -237,7 +237,7 @@ module.exports = {
     isBlockStructureValid,
     addBlockToChain,
     replaceChain,
-    getBlockchain, 
     createNewBlock,
+    sendTx,
     getAccountBalance
 };

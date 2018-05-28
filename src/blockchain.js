@@ -14,7 +14,7 @@ const {
 
 const { createCoinbaseTx, processTxs } = Transactions;
 
-const { addToMempool, getMempool } = Mempool;
+const { addToMempool, getMempool, updatedMempool } = Mempool;
 
 const BLOCK_GENERATION_INTERVAL = 10;
 const DIFFICULTY_ADJUSMENT_INTERVAL = 10;
@@ -241,6 +241,7 @@ const addBlockToChain = candidateBlock => {
     } else {
       blockchain.push(candidateBlock);
       uTxOuts = processedTxs;
+      updatedMempool(uTxOuts);
       return true;
     }
     return true;

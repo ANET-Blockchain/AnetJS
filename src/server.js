@@ -55,7 +55,7 @@ app
   });
 
 const server = app.listen(PORT, () =>
-  console.log(`Nomadcoin HTTP Server running on port ${PORT} ✅`)
+  console.log(`HTTP Server running on port ${PORT}`)
 );
 
 initWallet();

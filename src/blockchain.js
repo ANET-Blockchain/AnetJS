@@ -216,12 +216,22 @@ const isChainValid = candidateChain => {
     );
     return false;
   }
-  for (let i = 1; i < candidateChain.length; i++) {
-    if (!isBlockValid(candidateChain[i], candidateChain[i - 1])) {
-      return false;
+
+  let foreginUTxOuts = [];
+
+  for (let i = 0; i < candidateChain.length; i++) {
+    const currentBlock = candidateChain[i];
+    if (i !== 0 && !isBlockValid(currentBlock, candidateChain[i - 1])) {
+      return null;
+    }
+
+    foreginUTxOuts = processTxs(currentBlock.data, foreginUTxOuts, currentBlock.index);
+
+    if(foreginUTxOuts === null) {
+      return null;
     }
   }
-  return true;
+  return foreginUTxOuts;
 };
 
 const sumDifficulty = anyBlockchain =>
@@ -231,11 +241,17 @@ const sumDifficulty = anyBlockchain =>
     .reduce((a, b) => a + b);
 
 const replaceChain = candidateChain => {
+  const foreginUTxOuts = isChainValid(candidateChain);
+  const validChain = foreginUTxOuts !== null;
+
   if (
-    isChainValid(candidateChain) &&
+    validChain &&
     sumDifficulty(candidateChain) > sumDifficulty(getBlockchain())
   ) {
     blockchain = candidateChain;
+    uTxOuts = foreginUTxOuts;
+    updateMempool(uTxOuts);
+    require("./p2p").broadcastNewBlock();
     return true;
   } else {
     return false;

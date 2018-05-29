@@ -1,4 +1,5 @@
 const express = require("express"),
+  _ = require("lodash"),
   bodyParser = require("body-parser"),
   morgan = require("morgan"),
   Blockchain = require("./blockchain"),
@@ -39,9 +40,25 @@ app.get("/me/balance", (req, res) => {
   res.send({ balance });
 });
 
+app.get("/balance/:address", (req, res) => {
+  const { params: { address }} = req;
+  const balance = getAccountBalance(address);
+  res.send({balance});
+});
+
 
 app.get("/me/address", (req, res) => {
   res.send(getPublicFromWallet());
+});
+
+app.get("/blocks/:hash", (req, res) => {
+  const { params: { hash }} = req;
+  const block = _.find(getBlockchain(), { hash });
+  if(block === undefined) {
+    res.status(400).send("Block not found");
+  } else {
+    res.send(block);
+  }
 });
 
 app

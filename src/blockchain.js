@@ -282,7 +282,7 @@ const addBlockToChain = candidateBlock => {
 
 const getUTxOutList = () => _.cloneDeep(uTxOuts);
 
-const getAccountBalance = () => getBalance(getPublicFromWallet(), uTxOuts);
+const getAccountBalance = (address = getPublicFromWallet()) => getBalance(address, uTxOuts);
 
 const sendTx = (address, amount) => {
   const tx = createTx(

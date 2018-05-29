@@ -40,7 +40,7 @@ const hasTxIn = (txIn, uTxOutList) => {
   return foundTxIn !== undefined;
 }
 
-const updatedMempool = (uTxOutList) => {
+const updateMempool = (uTxOutList) => {
   const invalidTxs = [];
 
   for(const tx of mempool) {
@@ -69,5 +69,5 @@ const addToMempool = (tx, uTxOutList) => {
 module.exports = {
   addToMempool,
   getMempool,
-  updatedMempool
+  updateMempool
 };

@@ -1,7 +1,7 @@
 const CryptoJS = require("crypto-js"),
   _ = require("lodash"),
   Wallet = require("./wallet"),
-  Mempool = require("./memPool"),
+  Mempool = require("./mempool"),
   Transactions = require("./transactions"),
   hexToBinary = require("hex-to-binary");
 
@@ -14,7 +14,7 @@ const {
 
 const { createCoinbaseTx, processTxs } = Transactions;
 
-const { addToMempool, getMempool, updatedMempool } = Mempool;
+const { addToMempool, getMempool, updateMempool } = Mempool;
 
 const BLOCK_GENERATION_INTERVAL = 10;
 const DIFFICULTY_ADJUSMENT_INTERVAL = 10;
@@ -33,7 +33,7 @@ class Block {
 
 const genesisTx = {
   txIns: [{ signature: "", txOutId: "", txOutIndex: 0 }],
-  "txOuts": [
+  txOuts: [
     {
       address: "04f20aec39b4c5f79355c053fdaf30410820400bb83ad93dd8ff16834b555e0f6262efba6ea94a87d3c267b5e6aca433ca89b342ac95c40230349ea4bf9caff1ed",
       amount: 50
@@ -46,7 +46,7 @@ const genesisTx = {
 const genesisBlock = new Block(
   0,
   "d2440983c010a844c136b919f60620470c33f81b07f193b2de06797234838792",
-  null,
+  "",
   1520408084,
   [genesisTx],
   0,
@@ -57,7 +57,7 @@ const genesisBlock = new Block(
 
 let blockchain = [genesisBlock];
 
-let uTxOuts = [];
+let uTxOuts = processTxs(blockchain[0].data, [], 0);
 
 const getNewestBlock = () => blockchain[blockchain.length - 1];
 
@@ -255,7 +255,7 @@ const addBlockToChain = candidateBlock => {
     } else {
       blockchain.push(candidateBlock);
       uTxOuts = processedTxs;
-      updatedMempool(uTxOuts);
+      updateMempool(uTxOuts);
       return true;
     }
     return true;

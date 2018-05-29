@@ -46,7 +46,6 @@ app.get("/balance/:address", (req, res) => {
   res.send({balance});
 });
 
-
 app.get("/me/address", (req, res) => {
   res.send(getPublicFromWallet());
 });
@@ -60,6 +59,21 @@ app.get("/blocks/:hash", (req, res) => {
     res.send(block);
   }
 });
+
+app.get("/transactions/:id", (req, res) => {
+  const tx = _(getBlockchain())
+    .map(block => block.data)
+    .flatten()
+    .find({ id: req.params.id });
+
+  if(tx === undefined) {
+    res.status(400).send("Transaction not found");
+  } else {
+    res.send(tx);
+  }
+});
+
+
 
 app
   .route("/transactions")

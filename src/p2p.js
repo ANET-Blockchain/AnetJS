@@ -191,7 +191,7 @@ const connectToPeers = newPeer => {
   ws.on("open", () => {
     initSocketConnection(ws);
   });
-  ws.on("error", () => console.log("Connection failed"));
+  ws.on("error", (err) => console.log("Connection failed", err));
   ws.on("close", () => console.log("Connection closed"));
 };
 

@@ -3,7 +3,8 @@ const CryptoJS = require("crypto-js"),
   Wallet = require("./wallet"),
   Mempool = require("./mempool"),
   Transactions = require("./transactions"),
-  hexToBinary = require("hex-to-binary");
+  hexToBinary = require("hex-to-binary"),
+  level = require("level-browserify");
 
 const {
   getBalance,
@@ -54,7 +55,6 @@ const genesisBlock = new Block(
 );
 
 
-
 let blockchain = [genesisBlock];
 
 let uTxOuts = processTxs(blockchain[0].data, [], 0);
@@ -64,6 +64,10 @@ const getNewestBlock = () => blockchain[blockchain.length - 1];
 const getTimestamp = () => Math.round(new Date().getTime() / 1000);
 
 const getBlockchain = () => blockchain;
+
+const AddBlockToDB = block => {
+  
+}
 
 const createHash = (index, previousHash, timestamp, data, difficulty, nonce) =>
   CryptoJS.SHA256(

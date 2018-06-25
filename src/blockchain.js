@@ -66,7 +66,31 @@ const getTimestamp = () => Math.round(new Date().getTime() / 1000);
 const getBlockchain = () => blockchain;
 
 const AddBlockToDB = block => {
+  const db = level('./db');
   
+  console.log(block.hash);
+
+  db.put(block.hash, JSON.stringify(block), (err) => {
+    if (err) return console.log('ERROR! ', err); // some kind of I/O error
+  
+    db.get(block.hash, (err, value) => {
+      if (err) return console.log('ERROR! ', err); // likely the key was not found
+      console.log('block_saved = ' + value);
+    });
+  });
+
+  db.put('l', block.hash, (err) => {
+    if (err) return console.log('ERROR! ', err); // some kind of I/O error
+  
+    db.get('l', (err, value) => {
+      if (err) return console.log('ERROR! ', err); // likely the key was not found
+      console.log('last_block = ' + value);
+    });
+
+    db.close((err) => {
+      if (err) return console.log('ERROR! ', err);
+    });
+  });
 }
 
 const createHash = (index, previousHash, timestamp, data, difficulty, nonce) =>
@@ -171,7 +195,7 @@ const getBlocksHash = block =>
     block.nonce
   );
 
-const isTimeStampValid = (newBlock, oldBlock) => {
+const isTimestampValid = (newBlock, oldBlock) => {
   return (
     oldBlock.timestamp - 60 < newBlock.timestamp &&
     newBlock.timestamp - 60 < getTimestamp()
@@ -193,7 +217,7 @@ const isBlockValid = (candidateBlock, latestBlock) => {
   } else if (getBlocksHash(candidateBlock) !== candidateBlock.hash) {
     console.log("The hash of this block is invalid");
     return false;
-  } else if (!isTimeStampValid(candidateBlock, latestBlock)) {
+  } else if (!isTimestampValid(candidateBlock, latestBlock)) {
     console.log("The timestamp of this block is dodgy");
     return false;
   }
@@ -276,6 +300,7 @@ const addBlockToChain = candidateBlock => {
       blockchain.push(candidateBlock);
       uTxOuts = processedTxs;
       updateMempool(uTxOuts);
+      AddBlockToDB(candidateBlock);
       return true;
     }
     return true;

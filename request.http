@@ -1,7 +1,7 @@
 GET http://anetchain.asuscomm.com:3000/blocks
 
 ###
-POST http://anetchain.asuscomm.com:3000/blocks
+POST http://localhost:3000/blocks
 Content-Type: application/json
 
 ###

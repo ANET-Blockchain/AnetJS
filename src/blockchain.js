@@ -4,7 +4,7 @@ const CryptoJS = require("crypto-js"),
   Mempool = require("./mempool"),
   Transactions = require("./transactions"),
   hexToBinary = require("hex-to-binary"),
-  level = require("level-browserify");
+  level = require('level-browserify');
 
 const {
   getBalance,
@@ -43,7 +43,6 @@ const genesisTx = {
   id: "ad67c73cd8e98af6db4ac14cc790664a890286d4b06c6da7ef223aef8c281e76"
 }
 
-
 const genesisBlock = new Block(
   0,
   "d2440983c010a844c136b919f60620470c33f81b07f193b2de06797234838792",
@@ -53,7 +52,6 @@ const genesisBlock = new Block(
   0,
   0
 );
-
 
 let blockchain = [genesisBlock];
 
@@ -65,31 +63,39 @@ const getTimestamp = () => Math.round(new Date().getTime() / 1000);
 
 const getBlockchain = () => blockchain;
 
-const AddBlockToDB = block => {
+const addBlockToDB = block => {
   const db = level('./db');
   
-  console.log(block.hash);
-
-  db.put(block.hash, JSON.stringify(block), (err) => {
-    if (err) return console.log('ERROR! ', err); // some kind of I/O error
+  var ops = [
+    { type: 'put', key: block.index, value: JSON.stringify(block) },
+    { type: 'put', key: 'l', value: block.hash }
+  ]
   
-    db.get(block.hash, (err, value) => {
-      if (err) return console.log('ERROR! ', err); // likely the key was not found
-      console.log('block_saved = ' + value);
-    });
+  db.batch(ops, function (err) {
+    if (err) return console.log('Error: ', err)
+    console.log('Block Added To DB!')
   });
+  db.close();
+}
 
-  db.put('l', block.hash, (err) => {
-    if (err) return console.log('ERROR! ', err); // some kind of I/O error
-  
-    db.get('l', (err, value) => {
-      if (err) return console.log('ERROR! ', err); // likely the key was not found
-      console.log('last_block = ' + value);
-    });
+const initBlockchain = () => {
+  const db = level('./db');
 
-    db.close((err) => {
-      if (err) return console.log('ERROR! ', err);
-    });
+  db.createReadStream()
+  .on('data', function (data) {
+    console.log(data.key, '=', data.value);
+    if(data.key !== 'l') addBlockToChain(JSON.parse(data.value), false);
+  })
+  .on('error', function (err) {
+    console.log('Oh my!', err);
+  })
+  .on('close', function () {
+    console.log('Stream closed');
+    db.close();
+  })
+  .on('end', function () {
+    console.log('Stream ended');
+    db.close();
   });
 }
 
@@ -119,7 +125,9 @@ const createNewRawBlock = data => {
     data,
     difficulty
   );
-  addBlockToChain(newBlock);
+  if(addBlockToChain(newBlock)) {
+    
+  }
   require("./p2p").broadcastNewBlock();
   return newBlock;
 };
@@ -179,6 +187,7 @@ const findBlock = (index, previousHash, timestamp, data, difficulty) => {
 };
 
 const hashMatchesDifficulty = (hash, difficulty) => {
+  console.log("Trying difficulty:", difficulty);
   const hashInBinary = hexToBinary(hash);
   const requiredZeros = "0".repeat(difficulty);
   console.log("Trying difficulty:", difficulty, "with hash", hashInBinary);
@@ -277,6 +286,9 @@ const replaceChain = candidateChain => {
     sumDifficulty(candidateChain) > sumDifficulty(getBlockchain())
   ) {
     blockchain = candidateChain;
+    for(i = 1; i < blockchain.length; i++) {
+      addBlockToDB(blockchain[i]);
+    }
     uTxOuts = foreginUTxOuts;
     updateMempool(uTxOuts);
     require("./p2p").broadcastNewBlock();
@@ -286,7 +298,7 @@ const replaceChain = candidateChain => {
   }
 };
 
-const addBlockToChain = candidateBlock => {
+const addBlockToChain = (candidateBlock, bDBflag = true) => {
   if (isBlockValid(candidateBlock, getNewestBlock())) {
     const processedTxs = processTxs(
       candidateBlock.data,
@@ -298,12 +310,13 @@ const addBlockToChain = candidateBlock => {
       return false;
     } else {
       blockchain.push(candidateBlock);
+      if(bDBflag) {
+        addBlockToDB(candidateBlock);
+      }
       uTxOuts = processedTxs;
       updateMempool(uTxOuts);
-      AddBlockToDB(candidateBlock);
       return true;
     }
-    return true;
   } else {
     return false;
   }
@@ -340,5 +353,6 @@ module.exports = {
   replaceChain,
   getAccountBalance,
   sendTx,
-  handleIncomingTx
+  handleIncomingTx,
+  initBlockchain
 };

@@ -7,7 +7,7 @@ const express = require("express"),
   Mempool = require("./mempool"),
   Wallet = require("./wallet");
 
-const { getBlockchain, createNewBlock, getAccountBalance, sendTx } = Blockchain;
+const { getBlockchain, createNewBlock, getAccountBalance, sendTx, initBlockchain } = Blockchain;
 const { startP2PServer, connectToPeers } = P2P;
 const { initWallet, getPublicFromWallet } = Wallet;
 const { getMempool } = Mempool;
@@ -98,4 +98,5 @@ const server = app.listen(PORT, () =>
 );
 
 initWallet();
+initBlockchain();
 startP2PServer(server);

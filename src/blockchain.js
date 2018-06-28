@@ -93,9 +93,9 @@ const addTxToDB = tx => {
 }
 
 const initBlockchain = () => {
-  const db = level('./db/block');
+  const blockDb = level('./db/block');
 
-  db.createReadStream()
+  blockDb.createReadStream()
   .on('data', function (data) {
     console.log(data.key, '=', data.value);
     if(data.key !== 'l') addBlockToChain(JSON.parse(data.value), false);

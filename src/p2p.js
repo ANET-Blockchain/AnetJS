@@ -21,9 +21,9 @@ const sockets = [];
 // Messages Types
 const GET_LATEST = "GET_LATEST";
 const GET_ALL = "GET_ALL";
-const BLOCKCHAIN_RESPONSE = "BLOCKCHAIN_RESPONSE";
+const BLOCKCHAIN_RESPONSE = "BLOCKCHAIN_RESPONSE"; // Incoming blockchain response
 const REQUEST_MEMPOOL = "REQUEST_MEMPOOL";
-const MEMPOOL_RESPONSE = "MEMPOOL_RESPONSE"
+const MEMPOOL_RESPONSE = "MEMPOOL_RESPONSE" // Incoming mempool response
 
 // Message Creators
 const getLatest = () => {

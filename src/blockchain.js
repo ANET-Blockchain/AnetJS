@@ -64,7 +64,7 @@ const getTimestamp = () => Math.round(new Date().getTime() / 1000);
 const getBlockchain = () => blockchain;
 
 const addBlockToDB = block => {
-  const db = level('./db');
+  const db = level('./db/block');
   
   var ops = [
     { type: 'put', key: block.index, value: JSON.stringify(block) },
@@ -73,13 +73,27 @@ const addBlockToDB = block => {
   
   db.batch(ops, function (err) {
     if (err) return console.log('Error: ', err)
-    console.log('Block Added To DB!')
+    console.log('Block added to DB!')
+  });
+  db.close();
+}
+
+const addTxToDB = tx => {
+  const db = level('./db/tx');
+
+  var ops = [
+    { type: 'put', key: tx.id, value: JSON.stringify(tx) }
+  ]
+  
+  db.batch(ops, function (err) {
+    if (err) return console.log('Error: ', err)
+    console.log('Tx added to DB!')
   });
   db.close();
 }
 
 const initBlockchain = () => {
-  const db = level('./db');
+  const db = level('./db/block');
 
   db.createReadStream()
   .on('data', function (data) {
@@ -125,9 +139,7 @@ const createNewRawBlock = data => {
     data,
     difficulty
   );
-  if(addBlockToChain(newBlock)) {
-    
-  }
+  addBlockToChain(newBlock);
   require("./p2p").broadcastNewBlock();
   return newBlock;
 };
@@ -287,7 +299,7 @@ const replaceChain = candidateChain => {
   ) {
     blockchain = candidateChain;
     for(i = 1; i < blockchain.length; i++) {
-      addBlockToDB(blockchain[i]);
+    //  addBlockToDB(blockchain[i]);
     }
     uTxOuts = foreginUTxOuts;
     updateMempool(uTxOuts);

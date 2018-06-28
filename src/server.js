@@ -98,5 +98,5 @@ const server = app.listen(PORT, () =>
 );
 
 initWallet();
-initBlockchain();
+//initBlockchain();
 startP2PServer(server);

@@ -1,7 +1,19 @@
-# anetjs
+# Anet js
 anet blockchain made in nodejs
 
+# Dependencies
+`yarn add nodemon`
+
+# How to test
+`yarn dev`
+
 # TODO
-0. This will be the browser node of the ANET chain
-1. applying fileDB such as levelDB or BoltDB to the blockchain and indexedDB for browser node
-2. reviewing WebRTC tech for future application
+This will be the browser node of the ANET chain
+
+- Mini-blockchain Schemes for easy node addition
+  - Mini-blockchain
+  - Account Tree
+  - Proof Chain
+  
+- Other Techs
+  - Web Assembly, WebRTC, Argon2, IndexedDB, LevelDB, ...

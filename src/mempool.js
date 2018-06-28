@@ -57,13 +57,14 @@ const updateMempool = (uTxOutList) => {
   }
 };
 
-const addToMempool = (tx, uTxOutList) => {
+const addToMempool = (tx, uTxOutList, bDBflag = true) => {
   if (!validateTx(tx, uTxOutList)) {
     throw Error("This tx is invalid. Will not add it to pool");
   } else if (!isTxValidForPool(tx, mempool)) {
     throw Error("This tx is not valid for the pool. Will not add it.");
+  } else {
+    mempool.push(tx);
   }
-  mempool.push(tx);
 };
 
 module.exports = {

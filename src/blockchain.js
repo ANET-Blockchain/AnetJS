@@ -94,11 +94,29 @@ const addTxToDB = tx => {
 
 const initBlockchain = () => {
   const blockDb = level('./db/block');
+  const txDb = level('./db/tx');
 
   blockDb.createReadStream()
   .on('data', function (data) {
     console.log(data.key, '=', data.value);
     if(data.key !== 'l') addBlockToChain(JSON.parse(data.value), false);
+  })
+  .on('error', function (err) {
+    console.log('Oh my!', err);
+  })
+  .on('close', function () {
+    console.log('Stream closed');
+    db.close();
+  })
+  .on('end', function () {
+    console.log('Stream ended');
+    db.close();
+  });
+
+  txDb.createReadStream()
+  .on('data', function (data) {
+    console.log(data.key, '=', data.value);
+    addToMempool(JSON.parse(data.value), uTxOuts, false);
   })
   .on('error', function (err) {
     console.log('Oh my!', err);

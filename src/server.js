@@ -7,7 +7,7 @@ const express = require("express"),
   Mempool = require("./mempool"),
   Wallet = require("./wallet");
 
-const { getBlockchain, createNewBlock, getAccountBalance, sendTx, initBlockchain } = Blockchain;
+const { getBlockchain, createNewBlock, getAccountBalance, sendTx, initBlockchain, getUTxOutList } = Blockchain;
 const { startP2PServer, connectToPeers } = P2P;
 const { initWallet, getPublicFromWallet } = Wallet;
 const { getMempool } = Mempool;
@@ -34,7 +34,7 @@ app.post("/peers", (req, res) => {
   res.send();
 });
 
-app.get("/me/balance", (req, res) => {
+app.get("/balance", (req, res) => {
   const balance = getAccountBalance();
   res.send({ balance });
 });
@@ -45,8 +45,12 @@ app.get("/balance/:address", (req, res) => {
   res.send({balance});
 });
 
-app.get("/me/address", (req, res) => {
+app.get("/myaddress", (req, res) => {
   res.send(getPublicFromWallet());
+});
+
+app.get("/utxolist", (req, res) => {
+  res.send(getUTxOutList());
 });
 
 app.get("/blocks/:hash", (req, res) => {

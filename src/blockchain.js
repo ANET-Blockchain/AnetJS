@@ -69,25 +69,11 @@ const addBlockToDB = block => {
   var ops = [
     { type: 'put', key: block.index, value: JSON.stringify(block) },
     { type: 'put', key: 'l', value: block.hash }
-  ]
+  ];
   
   db.batch(ops, function (err) {
-    if (err) return console.log('Error: ', err)
-    console.log('Block added to DB!')
-  });
-  db.close();
-}
-
-const addTxToDB = tx => {
-  const db = level('./db/tx');
-
-  var ops = [
-    { type: 'put', key: tx.id, value: JSON.stringify(tx) }
-  ]
-  
-  db.batch(ops, function (err) {
-    if (err) return console.log('Error: ', err)
-    console.log('Tx added to DB!')
+    if (err) return console.log('Error: ', err);
+    console.log('Block added to DB!');
   });
   db.close();
 }
@@ -384,5 +370,6 @@ module.exports = {
   getAccountBalance,
   sendTx,
   handleIncomingTx,
-  initBlockchain
+  initBlockchain,
+  getUTxOutList
 };

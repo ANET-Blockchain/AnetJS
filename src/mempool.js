@@ -1,5 +1,6 @@
 const _ = require("lodash"),
-  Transactions = require("./transactions");
+  Transactions = require("./transactions"),
+  level = require('level-browserify');
 
 const { validateTx } = Transactions;
 
@@ -64,8 +65,25 @@ const addToMempool = (tx, uTxOutList, bDBflag = true) => {
     throw Error("This tx is not valid for the pool. Will not add it.");
   } else {
     mempool.push(tx);
+    if(bDBflag) {
+      addTxToDB(tx);
+    }
   }
 };
+
+const addTxToDB = tx => {
+  const db = level('./db/tx');
+
+  var ops = [
+    { type: 'put', key: tx.id, value: JSON.stringify(tx) }
+  ];
+  
+  db.batch(ops, function (err) {
+    if (err) return console.log('Error: ', err);
+    console.log('Tx added to DB!');
+  });
+  db.close();
+}
 
 module.exports = {
   addToMempool,

@@ -53,11 +53,15 @@ const initWallet = () => {
 const findAmountInUTxOuts = (amountNeeded, myUTxOuts) => {
   let currentAmount = 0;
   const includedUTxOuts = [];
+  
+  console.log("myUTxOuts:", JSON.stringify(myUTxOuts));
+
   for (const myUTxOut of myUTxOuts) {
     includedUTxOuts.push(myUTxOut);
     currentAmount = currentAmount + myUTxOut.amount;
     if (currentAmount >= amountNeeded) {
       const leftOverAmount = currentAmount - amountNeeded;
+      console.log("findAmountInUTxOuts:", JSON.stringify(includedUTxOuts));
       return { includedUTxOuts, leftOverAmount };
     }
   }

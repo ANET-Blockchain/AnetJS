@@ -92,29 +92,29 @@ const initBlockchain = () => {
   })
   .on('close', function () {
     console.log('Stream closed');
-    db.close();
+    blockDb.close();
   })
   .on('end', function () {
     console.log('Stream ended');
-    db.close();
+    blockDb.close();
   });
 
-  txDb.createReadStream()
+  /*txDb.createReadStream()
   .on('data', function (data) {
     console.log(data.key, '=', data.value);
-    addToMempool(JSON.parse(data.value), uTxOuts, false);
+    //addToMempool(JSON.parse(data.value), uTxOuts, false);
   })
   .on('error', function (err) {
     console.log('Oh my!', err);
   })
   .on('close', function () {
     console.log('Stream closed');
-    db.close();
+    txDb.close();
   })
   .on('end', function () {
     console.log('Stream ended');
-    db.close();
-  });
+    txDb.close();
+  });*/
 }
 
 const createHash = (index, previousHash, timestamp, data, difficulty, nonce) =>
@@ -342,11 +342,16 @@ const getUTxOutList = () => _.cloneDeep(uTxOuts);
 
 const getAccountBalance = (address = getPublicFromWallet()) => getBalance(address, uTxOuts);
 
-const sendTx = (address, amount) => {
+const sendTx = (address, amount, sender = null) => {
+  
+  if (sender == null) {
+    sender = getPrivateFromWallet();
+  }
+
   const tx = createTx(
     address,
     amount,
-    getPrivateFromWallet(),
+    sender,
     getUTxOutList(),
     getMempool()
   );

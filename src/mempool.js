@@ -80,7 +80,7 @@ const addTxToDB = tx => {
   
   db.batch(ops, function (err) {
     if (err) return console.log('Error: ', err);
-    console.log('Tx added to DB!');
+    else console.log('Tx added to DB!');
   });
   db.close();
 }

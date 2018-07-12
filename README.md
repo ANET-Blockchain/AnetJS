@@ -2,8 +2,8 @@
 anet blockchain made in nodejs
 
 # Dependencies
-`yarn add nodemon`
-`yarn add level-browserify`
+- `yarn add nodemon`
+- `yarn add level-browserify`
 
 # How to test
 `yarn dev`
